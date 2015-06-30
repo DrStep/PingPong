@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+jQuery(document).ready(function ($) {
+	$('#signinForm').submit(function (event) {
+		event.preventDefault();
+		var data = 'username=' + $('#usernameSignIn').val() + '&password=' + $('#passwordSignIn').val();
+		$.ajax({
+			data: data,
+			timeout: 1000,
+			type: 'POST',
+			url: 'http://localhost:8080/auth'
+
+		}).done(function(data, textStatus, jqXHR) {
+			alert("Successful signin: " + data.message);
+			localStorage.setItem("RESTAuthUsername", data.token);
+		}).fail(function(data, textStatus, errorThrown) {
+			alert("Signin failed: " + data.auth_error);
+		});
+	});
+});
+
+    var ping = function(){
+        var resDiv = document.getElementById('result');
+        var authToken = localStorage.getItem("RESTAuthUsername");
+        if (authToken == null)
+        	authToken = ""
+        console.log(authToken);
+        $.ajax({
+        	data: 'authtoken=' + authToken + '&command=ping',
+			timeout: 1000,
+			type: 'POST',
+			url: 'http://localhost:8080/commands',
+			xhr: function() {  // Custom XMLHttpRequest
+                var myXhr = $.ajaxSettings.xhr();
+                return myXhr;
+            }
+		}).done(function(data, textStatus, jqXHR) {
+			resDiv.innerHTML = data.result;
+		}).fail(function(data, textStatus, errorThrown) {
+			alert("Signin failed: " + data.auth_error);
+		});
+    };
+
+</script>
+</head>
+<body>
+<h3>Sign In/Sign Up:</h3>
+<form id="signinForm" name="signinForm">
+	<label for="username">Username: </label><input id="usernameSignIn" name="usernameSignIn"><br/>
+	<label for="password">Password:</label><input id="passwordSignIn" name="passwordSignIn" type="password"><br/>
+	<button type="submit">Sign in</button>
+</form>
+<br>
+<br>
+<h3>Commands:</h3>
+<input type="button" id="req" onclick="ping()" value="Ping" />
+<br>
+<h3>Result: </h3> <div id = "result"> </div>
+</body>
+</html>
